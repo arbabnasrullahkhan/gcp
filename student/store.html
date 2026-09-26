@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Campus Store - GCP Desk</title>
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #0f172a; --accent: #4f46e5; --accent-hover: #4338ca; 
+            --bg-color: #f1f5f9; --island-bg: rgba(255, 255, 255, 0.85); --island-border: rgba(255, 255, 255, 0.9); 
+            --text-main: #0f172a; --text-secondary: #64748b; 
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #0ea5e9;
+            --radius-md: 20px; --radius-lg: 24px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #e2e8f0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; color: var(--text-main); }
+        
+        /* Exact 80 Background Layer Constraint */
+        .global-spread-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            opacity: 0.80; z-index: -80; pointer-events: none;
+        }
+        
+        /* Layout Framework */
+        .top-island { margin: 16px 24px; background: var(--island-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--island-border); border-radius: 100px; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); z-index: 1000; }
+        .top-left { display: flex; align-items: center; gap: 16px; }
+        .logo-box { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        .search-bar { background: rgba(0,0,0,0.04); border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 10px; width: 250px; border: 1px solid transparent; transition: 0.3s; }
+        .search-bar:focus-within { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .search-bar input { border: none; background: transparent; outline: none; font-family: 'Inter'; font-size: 14px; width: 100%; color: var(--text-main); }
+        
+        .top-center { display: flex; gap: 10px; }
+        .nav-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .nav-icon.active { background: rgba(79, 70, 229, 0.1); color: var(--accent); }
+        .nav-icon:hover:not(.active) { background: rgba(0,0,0,0.05); }
+        
+        .top-right { display: flex; align-items: center; gap: 12px; }
+        .profile-pic { width: 40px; height: 40px; border-radius: 50%; background: #ccc; overflow: hidden; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+
+        .main-container { flex: 1; display: grid; grid-template-columns: 280px 1fr 340px; gap: 24px; padding: 0 24px 24px 24px; overflow: hidden; }
+        
+        /* Left Sidebar Nav */
+        .left-sidebar { overflow-y: auto; padding-right: 10px; scrollbar-width: none; }
+        .left-sidebar::-webkit-scrollbar { display: none; }
+        .menu-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 16px; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; margin-bottom: 4px; }
+        .menu-item:hover { background: rgba(255,255,255,0.6); }
+        .menu-item.active { background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: var(--accent); }
+        .menu-icon { width: 36px; height: 36px; border-radius: 12px; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); color: inherit; flex-shrink: 0; }
+        
+        /* Center Area */
+        .center-feed { overflow-y: auto; padding-bottom: 100px; scrollbar-width: none; }
+        .center-feed::-webkit-scrollbar { display: none; }
+        .page-header { background: var(--island-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 30px; margin-bottom: 24px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .page-header h2 { margin: 0; font-family: 'Outfit'; font-size: 28px; font-weight: 800; color: var(--primary); }
+        .page-header p { margin: 8px 0 0 0; color: var(--text-secondary); }
+
+        /* Store UI */
+        .store-categories { display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+        .store-categories::-webkit-scrollbar { display: none; }
+        .category-tab { padding: 10px 20px; background: white; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .category-tab.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2); }
+
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.02); overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.06); border-color: rgba(79, 70, 229, 0.2); }
+        
+        .product-img { width: 100%; height: 160px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .product-img svg { width: 64px; height: 64px; color: var(--accent); opacity: 0.5; }
+        
+        .product-info { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .product-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--accent); letter-spacing: 0.5px; margin-bottom: 4px; }
+        .product-title { font-family: 'Outfit'; font-size: 16px; font-weight: 700; margin: 0 0 8px 0; color: var(--text-main); }
+        .product-price { font-family: 'Outfit'; font-size: 20px; font-weight: 800; color: var(--success); margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+        
+        .btn-add { background: var(--text-main); color: white; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-add:hover { background: var(--accent); transform: scale(1.05); }
+
+        /* Right Sidebar Widgets (Cart) */
+        .right-sidebar { overflow-y: auto; padding-left: 10px; scrollbar-width: none; }
+        .right-sidebar::-webkit-scrollbar { display: none; }
+        
+        .widget-island { background: var(--island-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .widget-title { font-family: 'Outfit'; font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 16px 0; display: flex; justify-content: space-between; align-items: center; }
+
+        .cart-empty { text-align: center; padding: 20px 0; color: var(--text-secondary); font-size: 13px; }
+        .cart-empty svg { margin-bottom: 12px; opacity: 0.3; }
+
+        .btn-checkout { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 600; font-family: 'Inter'; cursor: pointer; transition: 0.2s; margin-top: 16px; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2); }
+        .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3); }
+        .btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .mobile-dock { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.95); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.8); padding: 12px 24px; z-index: 1000; justify-content: space-between; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .dock-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); text-decoration: none; font-size: 10px; font-weight: 700; text-transform: uppercase; transition: all 0.3s; }
+        .dock-item.active { color: var(--accent); transform: translateY(-4px); }
+
+        .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr 300px; }
+            .left-sidebar { display: none; }
+        }
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 0 16px 80px 16px; gap: 16px; }
+            .right-sidebar { display: none; }
+            .top-island { margin: 16px; padding: 10px 16px; border-radius: 20px; }
+            .search-bar, .top-center { display: none; }
+            .mobile-dock { display: flex; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="global-spread-bg"></div>
+
+    <!-- 🏝️ Top Island Navbar -->
+    <header class="top-island">
+        <div class="top-left">
+            <div class="logo-box"><img src="../assets/images/logo.png" alt="G" onerror="this.outerHTML='<span style=\'color:var(--accent);font-weight:800;font-size:24px;\'>G</span>'"></div>
+            <div class="search-bar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Search store...">
+            </div>
+        </div>
+        <div class="top-center">
+            <a href="dashboard.html" class="nav-icon" title="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></a>
+            <a href="store.html" class="nav-icon active" title="Campus Store"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></a>
+            <a href="class.html" class="nav-icon" title="My Class"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></a>
+        </div>
+        <div class="top-right">
+            <div class="profile-pic" id="header-profile-btn" onclick="window.location.href='settings.html'">
+                <div class="skeleton" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <!-- Left Navigation -->
+        <nav class="left-sidebar">
+            <a href="profile.html" class="menu-item" style="margin-bottom:16px;">
+                <div class="profile-pic" style="width:40px; height:40px;" id="nav-profile-pic">
+                    <div class="skeleton" style="width:100%; height:100%;"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 700;" id="nav-student-name">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;" id="nav-student-id">...</div>
+                </div>
+            </a>
+            
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">Main Menu</div>
+            
+            <a href="dashboard.html" class="menu-item">
+                <div class="menu-icon" style="color:var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                Dashboard & Feed
+            </a>
+            <a href="class.html" class="menu-item">
+                <div class="menu-icon" style="color:#ec4899;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                My Class
+            </a>
+            <a href="academic.html" class="menu-item">
+                <div class="menu-icon" style="color:#0ea5e9;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></div>
+                Academic & Grades
+            </a>
+            <a href="attendance.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                Attendance
+            </a>
+            <a href="assignments.html" class="menu-item">
+                <div class="menu-icon" style="color:#f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                Assignments
+            </a>
+            <a href="documents.html" class="menu-item">
+                <div class="menu-icon" style="color:#8b5cf6;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></div>
+                Documents & Vault
+            </a>
+            
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">Campus</div>
+            <a href="fees.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                Fees & Dues
+            </a>
+            <!-- Added quick padding -->
+            <div style="height: 40px;"></div>
+        </nav>
+
+        <!-- Center Main Content -->
+        <main class="center-feed">
+            <div class="page-header">
+                <div>
+                    <h2>Campus Store</h2>
+                    <p>Order uniforms, books, and campus stationary directly.</p>
+                </div>
+                <div style="font-size:32px;">🛍️</div>
+            </div>
+            
+            <div class="store-categories">
+                <div class="category-tab active">All Items</div>
+                <div class="category-tab">Books & Notes</div>
+                <div class="category-tab">Uniforms</div>
+                <div class="category-tab">Stationery</div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="products-list">
+                
+                <div class="product-card">
+                    <div class="product-img">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-tag">Books</div>
+                        <h3 class="product-title">CS-101 Textbook Edition</h3>
+                        <div class="product-price">
+                            ₹450
+                            <button class="btn-add" onclick="alert('Added to cart')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16 2a8 8 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h1.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-tag">Uniform</div>
+                        <h3 class="product-title">Official College Hoodie (L)</h3>
+                        <div class="product-price">
+                            ₹1,200
+                            <button class="btn-add" onclick="alert('Added to cart')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-img">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    </div>
+                    <div class="product-info">
+                        <div class="product-tag">Stationery</div>
+                        <h3 class="product-title">Exam Pad & Pen Kit</h3>
+                        <div class="product-price">
+                            ₹150
+                            <button class="btn-add" onclick="alert('Added to cart')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </main>
+
+        <!-- Right Sidebar Widgets -->
+        <aside class="right-sidebar">
+            
+            <div class="widget-island">
+                <h4 class="widget-title">
+                    Your Cart
+                    <span style="background:var(--accent); color:white; border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; font-size:12px;">0</span>
+                </h4>
+                
+                <div class="cart-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    <p>Your cart is empty.</p>
+                </div>
+                
+                <button class="btn-checkout" disabled>Checkout</button>
+            </div>
+            
+            <div class="widget-island">
+                <h4 class="widget-title">Pickup Info</h4>
+                <div style="font-size:13px; line-height:1.5; color:var(--text-secondary);">
+                    All ordered items can be picked up from the main campus store (Block B) by showing your Digital ID Card and the order receipt.
+                </div>
+            </div>
+            
+        </aside>
+    </div>
+
+    <!-- Mobile Navigation Dock -->
+    <nav class="mobile-dock">
+        <a href="dashboard.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Feed
+        </a>
+        <a href="store.html" class="dock-item active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            Store
+        </a>
+        <a href="academic.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            Academics
+        </a>
+        <a href="profile.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Profile
+        </a>
+    </nav>
+
+    <!-- Firebase Integration script -->
+    <script type="module">
+        import { auth, db } from '../firebase/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        function getAvatarUrl(name, bg = '4f46e5', color = 'fff') {
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'U')}&background=${bg}&color=${color}&rounded=true`;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        
+                        // Update UI Basic Info
+                        const avatar = getAvatarUrl(userData.name);
+                        document.getElementById('header-profile-btn').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-profile-pic').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-student-name').textContent = userData.name;
+                        document.getElementById('nav-student-id').textContent = userData.rollNumber || 'No ID';
+                    }
+                } catch(e) {
+                    console.error("Error", e);
+                }
+            } else {
+                window.location.href = '../auth/login.html';
+            }
+        });
+    </script>
+</body>
+</html>

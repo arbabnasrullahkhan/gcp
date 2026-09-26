@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Student Profile - GCP Desk</title>
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --bg-color: #f1f5f9;
+            --island-bg: rgba(255, 255, 255, 0.85);
+            --island-border: rgba(255, 255, 255, 0.9);
+            --text-main: #0f172a;
+            --text-secondary: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+            --radius-md: 20px;
+            --radius-lg: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* Exact 80 Background Layer Constraint */
+        .global-spread-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            opacity: 0.80;
+            z-index: -80;
+            pointer-events: none;
+        }
+
+        /* Layout Framework */
+        .top-island {
+            margin: 16px 24px;
+            background: var(--island-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--island-border);
+            border-radius: 100px;
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-box {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .search-bar {
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 30px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 250px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .search-bar:focus-within {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: 'Inter';
+            font-size: 14px;
+            width: 100%;
+            color: var(--text-main);
+        }
+
+        .top-center {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-icon.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--accent);
+        }
+
+        .nav-icon:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ccc;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr 340px;
+            gap: 24px;
+            padding: 0 24px 24px 24px;
+            overflow: hidden;
+        }
+
+        /* Left Sidebar Nav */
+        .left-sidebar {
+            overflow-y: auto;
+            padding-right: 10px;
+            scrollbar-width: none;
+        }
+
+        .left-sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .menu-item.active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            color: var(--accent);
+        }
+
+        .menu-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            color: inherit;
+            flex-shrink: 0;
+        }
+
+        /* Center Area */
+        .center-feed {
+            overflow-y: auto;
+            padding-bottom: 100px;
+            scrollbar-width: none;
+        }
+
+        .center-feed::-webkit-scrollbar {
+            display: none;
+        }
+
+        .page-header {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid var(--island-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            font-family: 'Outfit';
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .page-header p {
+            margin: 8px 0 0 0;
+            color: var(--text-secondary);
+        }
+
+        /* Profile Specific UI */
+        .profile-hero {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            opacity: 0.1;
+        }
+
+        .hero-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .hero-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-info {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .hero-info h3 {
+            margin: 0 0 4px 0;
+            font-family: 'Outfit';
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .hero-info p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--accent);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .details-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+        }
+
+        .card-title {
+            font-family: 'Outfit';
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .info-group {
+            margin-bottom: 20px;
+        }
+
+        .info-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .info-val {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        input.info-val {
+            width: 100%;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input.info-val:focus {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-family: 'Inter';
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        /* Right Sidebar Widgets */
+        .right-sidebar {
+            overflow-y: auto;
+            padding-left: 10px;
+            scrollbar-width: none;
+        }
+
+        .right-sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .widget-island {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--island-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        .widget-title {
+            font-family: 'Outfit';
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 16px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            margin-bottom: 24px;
+        }
+
+        .status-box h4 {
+            margin: 0 0 4px 0;
+            color: var(--success);
+            font-size: 16px;
+        }
+
+        .status-box p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .id-card-preview {
+            background: linear-gradient(135deg, #1e1b4b, #4338ca);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(67, 56, 202, 0.3);
+        }
+
+        .id-card-preview::before {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .id-logo {
+            font-family: 'Outfit';
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .id-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .id-roll {
+            font-size: 12px;
+            opacity: 0.8;
+            font-family: monospace;
+            margin-bottom: 16px;
+        }
+
+        .barcode {
+            width: 100%;
+            height: 30px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="30"><rect width="2" height="30" x="0"/><rect width="1" height="30" x="4"/><rect width="3" height="30" x="8"/><rect width="2" height="30" x="14"/><rect width="1" height="30" x="18"/><rect width="4" height="30" x="22"/><rect width="1" height="30" x="28"/><rect width="2" height="30" x="32"/><rect width="3" height="30" x="38"/><rect width="1" height="30" x="44"/><rect width="2" height="30" x="48"/></svg>') repeat-x;
+            opacity: 0.5;
+        }
+
+        .btn-danger {
+            width: 100%;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-family: 'Inter';
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 16px;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .mobile-dock {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 12px 24px;
+            z-index: 1000;
+            justify-content: space-between;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .dock-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .dock-item.active {
+            color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr 300px;
+            }
+
+            .left-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 0 16px 80px 16px;
+                gap: 16px;
+            }
+
+            .right-sidebar {
+                display: none;
+            }
+
+            .top-island {
+                margin: 16px;
+                padding: 10px 16px;
+                border-radius: 20px;
+            }
+
+            .search-bar,
+            .top-center {
+                display: none;
+            }
+
+            .mobile-dock {
+                display: flex;
+            }
+
+            .profile-hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 32px 24px;
+            }
+
+            .hero-info p {
+                justify-content: center;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="global-spread-bg"></div>
+
+    <!-- 🏝️ Top Island Navbar -->
+    <header class="top-island">
+        <div class="top-left">
+            <div class="logo-box"><img src="../assets/images/logo.png" alt="G"
+                    onerror="this.outerHTML='<span style=\'color:var(--accent);font-weight:800;font-size:24px;\'>G</span>'">
+            </div>
+            <div class="search-bar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Search...">
+            </div>
+        </div>
+        <div class="top-center">
+            <a href="dashboard.html" class="nav-icon" title="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg></a>
+            <a href="store.html" class="nav-icon" title="Campus Store"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg></a>
+            <a href="class.html" class="nav-icon active" title="My Class"><svg width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg></a>
+        </div>
+        <div class="top-right">
+            <div class="profile-pic" id="header-profile-btn">
+                <div class="skeleton" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <!-- Left Navigation -->
+        <nav class="left-sidebar">
+            <a href="profile.html" class="menu-item active" style="margin-bottom:16px;">
+                <div class="profile-pic" style="width:40px; height:40px;" id="nav-profile-pic">
+                    <div class="skeleton" style="width:100%; height:100%;"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 700;" id="nav-student-name">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;" id="nav-student-id">
+                        ...</div>
+                </div>
+            </a>
+
+            <div
+                style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">
+                Main Menu</div>
+
+            <a href="dashboard.html" class="menu-item">
+                <div class="menu-icon" style="color:var(--text-secondary);"><svg width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg></div>
+                Dashboard & Feed
+            </a>
+            <a href="class.html" class="menu-item">
+                <div class="menu-icon" style="color:#ec4899;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg></div>
+                My Class
+            </a>
+            <a href="academic.html" class="menu-item">
+                <div class="menu-icon" style="color:#0ea5e9;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                    </svg></div>
+                Academic & Grades
+            </a>
+            <a href="attendance.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></div>
+                Attendance
+            </a>
+            <a href="assignments.html" class="menu-item">
+                <div class="menu-icon" style="color:#f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg></div>
+                Assignments
+            </a>
+            <a href="documents.html" class="menu-item">
+                <div class="menu-icon" style="color:#8b5cf6;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path
+                            d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                        </path>
+                    </svg></div>
+                Documents & Vault
+            </a>
+
+            <div
+                style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">
+                Campus</div>
+            <a href="fees.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg></div>
+                Fees & Dues
+            </a>
+            <!-- Added quick padding -->
+            <div style="height: 40px;"></div>
+        </nav>
+
+        <!-- Center Main Content -->
+        <main class="center-feed">
+            <div class="page-header">
+                <div>
+                    <h2>My Profile</h2>
+                    <p>Manage your identity and contact information.</p>
+                </div>
+            </div>
+
+            <!-- Hero -->
+            <div class="profile-hero">
+                <div class="hero-bg"></div>
+                <div class="hero-avatar" id="main-avatar">
+                    <div class="skeleton" style="width:100%;height:100%;"></div>
+                </div>
+                <div class="hero-info">
+                    <h3 id="hero-name">...</h3>
+                    <p>
+                        <span class="badge" id="hero-role">Student</span>
+                        <span id="hero-program">...</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Details Form/View -->
+            <div class="details-grid">
+
+                <div class="details-card">
+                    <div class="card-title">
+                        Personal Info
+                        <button
+                            style="background:transparent; border:none; color:var(--accent); font-weight:600; cursor:pointer;"
+                            onclick="toggleEdit()">Edit</button>
+                    </div>
+
+                    <div class="info-group">
+                        <div class="info-label">Full Name</div>
+                        <input type="text" class="info-val" id="input-name" disabled>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-val" id="input-email"
+                            style="background:rgba(0,0,0,0.02); color:var(--text-secondary);">...</div>
+                        <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;">Email cannot be
+                            changed directly.</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Phone Number</div>
+                        <input type="tel" class="info-val" id="input-phone" disabled>
+                    </div>
+
+                    <button class="btn-save" id="btn-save-profile"
+                        style="display:none; width:100%; margin-top:16px;">Save Changes</button>
+                </div>
+
+                <div class="details-card">
+                    <div class="card-title">Academic Identity</div>
+
+                    <div class="info-group">
+                        <div class="info-label">Roll Number / Enrollment</div>
+                        <div class="info-val" id="input-roll">...</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Username</div>
+                        <div class="info-val" id="input-username">...</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Program</div>
+                        <div class="info-val" id="input-prog-val">...</div>
+                    </div>
+
+                    <div
+                        style="padding:16px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); border-radius:12px; margin-top:24px; font-size:12px; color:#d97706; line-height:1.5;">
+                        <strong>Note:</strong> Academic identity fields are locked by the administration. Contact the
+                        registration office if there is an error.
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- Right Sidebar Widgets -->
+        <aside class="right-sidebar">
+
+            <div class="widget-island">
+                <h4 class="widget-title">Account Status</h4>
+
+                <div class="status-box">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"
+                        style="margin-bottom:8px;">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <h4 id="verify-status">Verified Account</h4>
+                    <p>Your ID card has been approved.</p>
+                </div>
+            </div>
+
+            <div class="widget-island">
+                <h4 class="widget-title">Digital ID Card</h4>
+
+                <div class="id-card-preview">
+                    <div class="id-logo">GCP Desk</div>
+                    <div class="id-name" id="id-name-display">...</div>
+                    <div class="id-roll" id="id-roll-display">...</div>
+                    <div class="barcode"></div>
+                </div>
+            </div>
+
+            <div class="widget-island">
+                <h4 class="widget-title">GCP Desk Account QR</h4>
+                
+                <div style="background: white; border-radius: 16px; padding: 24px; text-align: center; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 16px;">
+                    <!-- Placeholder QR Code SVG -->
+                    <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary); margin-bottom: 16px;">
+                        <rect x="3" y="3" width="6" height="6" rx="1"></rect>
+                        <rect x="15" y="3" width="6" height="6" rx="1"></rect>
+                        <rect x="3" y="15" width="6" height="6" rx="1"></rect>
+                        <rect x="15" y="15" width="2" height="2"></rect>
+                        <rect x="19" y="15" width="2" height="2"></rect>
+                        <rect x="15" y="19" width="2" height="2"></rect>
+                        <rect x="19" y="19" width="2" height="2"></rect>
+                    </svg>
+                    <div style="font-size: 13px; font-weight: 600; color: var(--success); display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Status: Active
+                    </div>
+                </div>
+                
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button style="width:100%; padding:10px; background:var(--bg-color); border:none; border-radius:10px; font-weight:600; font-family:'Inter'; color:var(--primary); cursor:pointer; font-size:13px;" onclick="alert('Viewing Full Screen QR')">View Full Screen QR</button>
+                    <div style="display:flex; gap:8px;">
+                        <button style="flex:1; padding:10px; background:var(--bg-color); border:none; border-radius:10px; font-weight:600; font-family:'Inter'; color:var(--primary); cursor:pointer; font-size:13px;" onclick="alert('QR Saved to Gallery')">Save Image</button>
+                        <button style="flex:1; padding:10px; background:rgba(239, 68, 68, 0.1); border:none; border-radius:10px; font-weight:600; font-family:'Inter'; color:var(--danger); cursor:pointer; font-size:13px;" onclick="if(confirm('Revoke this QR? This will immediately disable it.')) alert('QR Revoked');">Revoke</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget-island">
+                <h4 class="widget-title">System Options</h4>
+                <button class="btn-danger" onclick="logout()">Sign Out of GCP Desk</button>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- Mobile Navigation Dock -->
+    <nav class="mobile-dock">
+        <a href="dashboard.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Feed
+        </a>
+        <a href="academic.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+            Academics
+        </a>
+        <a href="attendance.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Attendance
+        </a>
+        <a href="profile.html" class="dock-item active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Profile
+        </a>
+    </nav>
+
+    <!-- Firebase Integration script -->
+    <script type="module">
+        import { auth, db } from '../firebase/firebase-config.js';
+        import { onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        let isEditing = false;
+        let currentUserUid = null;
+
+        function getAvatarUrl(name, bg = '4f46e5', color = 'fff') {
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'U')}&background=${bg}&color=${color}&rounded=true`;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+
+                        // Header Nav
+                        const avatar = getAvatarUrl(userData.name);
+                        document.getElementById('header-profile-btn').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-profile-pic').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-student-name').textContent = userData.name;
+                        document.getElementById('nav-student-id').textContent = userData.rollNumber || 'No ID';
+
+                        // Hero Section
+                        document.getElementById('main-avatar').innerHTML = `<img src="${avatar}" alt="Avatar">`;
+                        document.getElementById('hero-name').textContent = userData.name;
+                        document.getElementById('hero-role').textContent = userData.role;
+                        document.getElementById('hero-program').textContent = userData.program;
+
+                        // Form Fields
+                        document.getElementById('input-name').value = userData.name;
+                        document.getElementById('input-email').textContent = userData.email;
+                        document.getElementById('input-phone').value = userData.mobile || '';
+
+                        document.getElementById('input-roll').textContent = userData.rollNumber || 'N/A';
+                        document.getElementById('input-username').textContent = '@' + (userData.username || 'user');
+                        document.getElementById('input-prog-val').textContent = userData.program || 'N/A';
+
+                        // Verification Status
+                        if (userData.verificationStatus === 'pending') {
+                            const vStatus = document.getElementById('verify-status');
+                            vStatus.textContent = 'Verification Pending';
+                            vStatus.style.color = 'var(--warning)';
+                            vStatus.parentElement.style.background = 'rgba(245,158,11,0.05)';
+                            vStatus.parentElement.style.borderColor = 'rgba(245,158,11,0.2)';
+                            vStatus.parentElement.querySelector('svg').setAttribute('stroke', 'var(--warning)');
+                            vStatus.nextElementSibling.textContent = 'Admin review in progress.';
+                        }
+
+                        // ID Card
+                        document.getElementById('id-name-display').textContent = userData.name.toUpperCase();
+                        document.getElementById('id-roll-display').textContent = (userData.rollNumber || 'No ID').toUpperCase();
+                    }
+                } catch (e) {
+                    console.error("Error", e);
+                }
+            } else {
+                window.location.href = '../auth/login.html';
+            }
+        });
+
+        // Edit Mode Toggle
+        window.toggleEdit = function () {
+            isEditing = !isEditing;
+            const nameInput = document.getElementById('input-name');
+            const phoneInput = document.getElementById('input-phone');
+            const saveBtn = document.getElementById('btn-save-profile');
+
+            if (isEditing) {
+                nameInput.disabled = false;
+                phoneInput.disabled = false;
+                nameInput.focus();
+                saveBtn.style.display = 'block';
+            } else {
+                nameInput.disabled = true;
+                phoneInput.disabled = true;
+                saveBtn.style.display = 'none';
+            }
+        }
+
+        // Save Profile Update
+        document.getElementById('btn-save-profile').addEventListener('click', async () => {
+            if (!currentUserUid) return;
+
+            const btn = document.getElementById('btn-save-profile');
+            btn.textContent = 'Saving...';
+            btn.disabled = true;
+
+            const newName = document.getElementById('input-name').value.trim();
+            const newPhone = document.getElementById('input-phone').value.trim();
+
+            try {
+                // Update Firestore
+                await updateDoc(doc(db, "users", currentUserUid), {
+                    name: newName,
+                    mobile: newPhone
+                });
+
+                // Update Firebase Auth DisplayName (if it changed)
+                if (auth.currentUser.displayName !== newName) {
+                    await updateProfile(auth.currentUser, { displayName: newName });
+                }
+
+                alert("Profile updated successfully!");
+
+                // Update UI visually immediately without reload
+                document.getElementById('hero-name').textContent = newName;
+                document.getElementById('nav-student-name').textContent = newName;
+                document.getElementById('id-name-display').textContent = newName.toUpperCase();
+
+                const avatar = getAvatarUrl(newName);
+                document.getElementById('main-avatar').innerHTML = `<img src="${avatar}">`;
+
+                window.toggleEdit();
+            } catch (e) {
+                console.error("Error updating profile", e);
+                alert("Failed to update profile. " + e.message);
+            } finally {
+                btn.textContent = 'Save Changes';
+                btn.disabled = false;
+            }
+        });
+
+        // Logout
+        window.logout = async function () {
+            if (confirm("Are you sure you want to sign out?")) {
+                try {
+                    await signOut(auth);
+                    window.location.href = '../auth/login.html';
+                } catch (e) {
+                    console.error("Sign out error", e);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

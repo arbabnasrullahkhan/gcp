@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Global Dashboard - GCP Desk</title>
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --bg-color: #f1f5f9;
+            --island-bg: rgba(255, 255, 255, 0.85);
+            --island-border: rgba(255, 255, 255, 0.9);
+            --text-main: #0f172a;
+            --text-secondary: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+            --radius-sm: 12px;
+            --radius-md: 20px;
+            --radius-lg: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* 
+         * Background Layer: Spread screen, exactly 80 opacity 
+         * As requested for the new global structure
+         */
+        .global-spread-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            opacity: 0.80;
+            z-index: -80;
+            pointer-events: none;
+        }
+
+        /* Layout Framework */
+        .top-island {
+            margin: 16px 24px;
+            background: var(--island-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--island-border);
+            border-radius: 100px;
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-box {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .search-bar {
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 30px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 250px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .search-bar:focus-within {
+            background: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: 'Inter';
+            font-size: 14px;
+            width: 100%;
+            color: var(--text-main);
+        }
+
+        .top-center {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-icon.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--accent);
+        }
+
+        .nav-icon:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .top-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Notifications Panel */
+        .notification-panel {
+            position: absolute;
+            top: 70px;
+            right: 24px;
+            width: 360px;
+            background: var(--island-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--island-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 500px;
+            transform-origin: top right;
+            animation: popIn 0.2s ease-out;
+        }
+
+        .notification-panel.active {
+            display: flex;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .notif-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notif-header h3 {
+            margin: 0;
+            font-family: 'Outfit';
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .notif-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .notif-item {
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            gap: 12px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .notif-item:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .notif-item.unread {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .notif-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notif-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .notif-content p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .notif-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            display: block;
+        }
+
+        .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ccc;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+
+        .profile-pic img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Main Grid */
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr 340px;
+            gap: 24px;
+            padding: 0 24px 24px 24px;
+            overflow: hidden;
+        }
+
+        .left-sidebar {
+            overflow-y: auto;
+            padding-right: 10px;
+            scrollbar-width: none;
+        }
+
+        .left-sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: 0.2s;
+            margin-bottom: 4px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .menu-item.active {
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+            color: var(--accent);
+        }
+
+        .menu-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            color: inherit;
+            flex-shrink: 0;
+        }
+
+        /* Skeleton Loaders */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Center Feed */
+        .center-feed {
+            overflow-y: auto;
+            padding-bottom: 100px;
+            scrollbar-width: none;
+        }
+
+        .center-feed::-webkit-scrollbar {
+            display: none;
+        }
+
+        .page-header {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            margin-bottom: 24px;
+            border: 1px solid var(--island-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h2 {
+            margin: 0;
+            font-family: 'Outfit';
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .page-header p {
+            margin: 8px 0 0 0;
+            color: var(--text-secondary);
+        }
+
+        /* Feed creation */
+        .create-post {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+            border: 1px solid var(--island-border);
+        }
+
+        .post-input-area {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .post-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 30px;
+            padding: 12px 20px;
+            font-size: 15px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: none;
+            outline: none;
+            font-family: 'Inter';
+        }
+
+        .post-input:focus {
+            background: white;
+            border: 1px solid var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            padding-top: 16px;
+        }
+
+        .action-pill {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .action-pill:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-family: 'Inter';
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Feed Posts */
+        #feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .post-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .post-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .post-user-info h4 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-badge {
+            width: 14px;
+            height: 14px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .post-user-info span {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .post-content {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .post-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 12px;
+        }
+
+        .post-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .post-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+        }
+
+        .post-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+        }
+
+        .post-btn.active {
+            color: var(--accent);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-family: 'Outfit';
+            font-size: 20px;
+            color: var(--text-main);
+            margin: 0 0 8px 0;
+        }
+
+        /* Right Sidebar */
+        .right-sidebar {
+            overflow-y: auto;
+            padding-left: 10px;
+            scrollbar-width: none;
+        }
+
+        .right-sidebar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .id-card-widget {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            color: white;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(15, 23, 42, 0.2);
+        }
+
+        .id-card-widget::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .widget-island {
+            background: var(--island-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--island-border);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+
+        .widget-title {
+            font-family: 'Outfit';
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 16px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .academic-glance {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .glance-box {
+            background: rgba(0, 0, 0, 0.03);
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .glance-value {
+            font-family: 'Outfit';
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .glance-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+
+        .contact-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .online-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+
+        /* Full Screen Loader overlay */
+        #global-loader {
+            position: fixed;
+            inset: 0;
+            background: #e2e8f0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(79, 70, 229, 0.2);
+            border-left-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mobile Dock */
+        .mobile-dock {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 12px 24px;
+            z-index: 1000;
+            justify-content: space-between;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .dock-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .dock-item.active {
+            color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr 300px;
+            }
+
+            .left-sidebar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 0 16px 80px 16px;
+                gap: 16px;
+            }
+
+            .right-sidebar {
+                display: none;
+            }
+
+            .top-island {
+                margin: 16px;
+                padding: 10px 16px;
+                border-radius: 20px;
+            }
+
+            .search-bar,
+            .top-center {
+                display: none;
+            }
+
+            .mobile-dock {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Exact 80 background requirement -->
+    <div class="global-spread-bg"></div>
+
+    <!-- Initial Loading Screen -->
+    <div id="global-loader">
+        <div class="loader-spinner"></div>
+        <p style="margin-top: 16px; font-weight: 600; color: var(--text-secondary);">Authenticating Campus Session...
+        </p>
+    </div>
+
+    <!-- 🏝️ Top Island Navbar -->
+    <header class="top-island">
+        <div class="top-left">
+            <div class="logo-box">
+                <img src="../assets/images/logo.png" alt="GCP Logo"
+                    onerror="this.outerHTML='<span style=\'color:var(--accent);font-weight:800;font-size:24px;\'>G</span>'">
+            </div>
+            <div class="search-bar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="global-search" placeholder="Search campus...">
+            </div>
+        </div>
+        <div class="top-center">
+            <a href="dashboard.html" class="nav-icon active" title="Dashboard"><svg width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg></a>
+            <a href="store.html" class="nav-icon" title="Campus Store"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg></a>
+            <a href="class.html" class="nav-icon" title="My Class"><svg width="24" height="24" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg></a>
+        </div>
+        <div class="top-right">
+            <div class="action-btn" id="notif-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <div class="badge" id="notif-badge">0</div>
+            </div>
+
+            <div class="notification-panel" id="notif-panel">
+                <div class="notif-header">
+                    <h3>Notifications</h3>
+                    <span style="font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600;"
+                        id="mark-read-btn">Mark all read</span>
+                </div>
+                <div class="notif-body" id="notif-list">
+                    <!-- Loaded via JS -->
+                    <div class="empty-state">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <p>No new notifications</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-pic" id="header-profile-btn" onclick="window.location.href='settings.html'">
+                <div class="skeleton" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+
+        <!-- Left Navigation -->
+        <nav class="left-sidebar">
+            <a href="profile.html" class="menu-item" style="margin-bottom:16px;">
+                <div class="profile-pic" style="width:40px; height:40px;" id="nav-profile-pic">
+                    <div class="skeleton" style="width:100%; height:100%;"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 700;" id="nav-student-name">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;" id="nav-student-id">
+                        ...</div>
+                </div>
+            </a>
+
+            <div
+                style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">
+                Main Menu</div>
+
+            <a href="dashboard.html" class="menu-item active">
+                <div class="menu-icon" style="color:var(--accent);"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg></div>
+                Dashboard & Feed
+            </a>
+            <a href="class.html" class="menu-item">
+                <div class="menu-icon" style="color:#ec4899;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg></div>
+                My Class
+            </a>
+            <a href="academic.html" class="menu-item">
+                <div class="menu-icon" style="color:#0ea5e9;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                    </svg></div>
+                Academic & Grades
+            </a>
+            <a href="attendance.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg></div>
+                Attendance
+            </a>
+            <a href="assignments.html" class="menu-item">
+                <div class="menu-icon" style="color:#f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg></div>
+                Assignments
+            </a>
+            <a href="documents.html" class="menu-item">
+                <div class="menu-icon" style="color:#8b5cf6;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48">
+                        </path>
+                    </svg></div>
+                Documents & Vault
+            </a>
+
+            <div
+                style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">
+                Campus</div>
+
+            <a href="fees.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg></div>
+                Fees & Dues
+            </a>
+            <a href="exams.html" class="menu-item">
+                <div class="menu-icon" style="color:#ef4444;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg></div>
+                Exams & Datesheet
+            </a>
+            <a href="complaints.html" class="menu-item">
+                <div class="menu-icon" style="color:#ef4444;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                        </path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg></div>
+                Service Desk
+            </a>
+            <a href="opportunities.html" class="menu-item">
+                <div class="menu-icon" style="color:#f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="7"></circle>
+                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                    </svg></div>
+                Opportunities
+            </a>
+            <a href="services.html" class="menu-item">
+                <div class="menu-icon" style="color:#3b82f6;"><svg width="20" height="20" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg></div>
+                Hostel & Transport
+            </a>
+
+            <a href="settings.html" class="menu-item" style="margin-top:24px;">
+                <div class="menu-icon" style="color:var(--text-secondary);"><svg width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                        </path>
+                    </svg></div>
+                Settings & Auth
+            </a>
+
+            <!-- Quick padding at bottom to scroll past -->
+            <div style="height: 40px;"></div>
+        </nav>
+
+        <!-- Center Main Content -->
+        <main class="center-feed">
+            <div class="page-header">
+                <div>
+                    <h2>Global Feed</h2>
+                    <p>Official announcements and verified campus activities.</p>
+                </div>
+                <div style="font-size:32px;">🌐</div>
+            </div>
+
+            <!-- Post Creator -->
+            <div class="create-post">
+                <div class="post-input-area">
+                    <div class="profile-pic" id="create-post-pic">
+                        <div class="skeleton" style="width:100%; height:100%;"></div>
+                    </div>
+                    <input type="text" class="post-input" id="post-input-field"
+                        placeholder="Share something with your campus (Requires Proctor Approval)...">
+                </div>
+                <div
+                    style="font-size:12px; color:var(--text-secondary); background:rgba(79, 70, 229, 0.08); padding:10px 14px; border-radius:12px; margin-bottom:16px; border-left:3px solid var(--accent); display:flex; gap:10px; align-items:center;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>All student posts in the Global Feed undergo moderation before being publicly
+                        published.</span>
+                </div>
+                <div class="post-actions">
+                    <div class="action-pill" style="color:var(--success);"><svg width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg> Media</div>
+                    <div class="action-pill" style="color:var(--danger);"><svg width="18" height="18"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg> Document</div>
+                    <div class="action-pill" style="color:var(--info);"><svg width="18" height="18" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg> Poll</div>
+                    <button class="btn-primary" id="btn-submit-post" disabled>Submit</button>
+                </div>
+            </div>
+
+            <!-- Feed Stream -->
+            <div id="feed-container">
+                <!-- Initial Skeletons -->
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-user">
+                            <div class="profile-pic">
+                                <div class="skeleton" style="width:100%;height:100%;"></div>
+                            </div>
+                            <div>
+                                <div class="skeleton" style="width:120px; height:14px; margin-bottom:6px;"></div>
+                                <div class="skeleton" style="width:80px; height:10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skeleton" style="width:100%; height:14px; margin-bottom:8px;"></div>
+                    <div class="skeleton" style="width:90%; height:14px; margin-bottom:8px;"></div>
+                    <div class="skeleton" style="width:60%; height:14px;"></div>
+                </div>
+                <div class="post-card">
+                    <div class="post-header">
+                        <div class="post-user">
+                            <div class="profile-pic">
+                                <div class="skeleton" style="width:100%;height:100%;"></div>
+                            </div>
+                            <div>
+                                <div class="skeleton" style="width:140px; height:14px; margin-bottom:6px;"></div>
+                                <div class="skeleton" style="width:100px; height:10px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="skeleton" style="width:100%; height:14px; margin-bottom:8px;"></div>
+                    <div class="skeleton" style="width:80%; height:14px;"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Right Sidebar Widgets -->
+        <aside class="right-sidebar">
+
+            <div class="id-card-widget">
+                <h4
+                    style="margin:0 0 12px 0; font-family:'Outfit'; opacity:0.9; display: flex; justify-content: space-between;">
+                    Digital Identity
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </h4>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:22px; font-weight:800; font-family:'Outfit';" id="widget-roll-no">
+                            <div class="skeleton" style="width:100px; height:24px; background:rgba(255,255,255,0.2);">
+                            </div>
+                        </div>
+                        <div style="font-size:12px; opacity:0.8; margin-top:6px; text-transform: uppercase; letter-spacing: 0.5px;"
+                            id="widget-program">...</div>
+                        <div style="font-size:11px; opacity:0.6; margin-top:4px;" id="widget-status">Authenticating...
+                        </div>
+                    </div>
+                    <div style="width:64px; height:64px; background:white; border-radius:12px; display:flex; align-items:center; justify-content:center; color:black; font-weight:800; font-size:12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer;"
+                        onclick="window.location.href='profile.html'">QR</div>
+                </div>
+            </div>
+
+            <div class="widget-island">
+                <h4 class="widget-title">Academic Glance</h4>
+                <div class="academic-glance">
+                    <div class="glance-box">
+                        <div class="glance-value" id="glance-attendance">--%</div>
+                        <div class="glance-label">Attendance</div>
+                    </div>
+                    <div class="glance-box">
+                        <div class="glance-value" id="glance-cgpa">--</div>
+                        <div class="glance-label">CGPA</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget-island" id="contacts-widget">
+                <h4 class="widget-title">Directory <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg></h4>
+                <!-- Skeletons -->
+                <div class="contact-item">
+                    <div class="skeleton" style="width:32px;height:32px;border-radius:50%;"></div>
+                    <div class="skeleton" style="width:120px;height:12px;"></div>
+                </div>
+                <div class="contact-item">
+                    <div class="skeleton" style="width:32px;height:32px;border-radius:50%;"></div>
+                    <div class="skeleton" style="width:100px;height:12px;"></div>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- Mobile Navigation Dock -->
+    <nav class="mobile-dock">
+        <a href="dashboard.html" class="dock-item active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Feed
+        </a>
+        <a href="academic.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+            </svg>
+            Academics
+        </a>
+        <a href="attendance.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Attendance
+        </a>
+        <a href="profile.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Profile
+        </a>
+    </nav>
+
+    <!-- Firebase Integration script -->
+    <script type="module">
+        import { auth, db } from '../firebase/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // DOM Elements
+        const loader = document.getElementById('global-loader');
+        const feedContainer = document.getElementById('feed-container');
+        const notifBtn = document.getElementById('notif-btn');
+        const notifPanel = document.getElementById('notif-panel');
+        const notifBadge = document.getElementById('notif-badge');
+        const notifList = document.getElementById('notif-list');
+        const markReadBtn = document.getElementById('mark-read-btn');
+        const postInput = document.getElementById('post-input-field');
+        const postSubmit = document.getElementById('btn-submit-post');
+
+        let currentUserData = null;
+        let feedUnsubscribe = null;
+
+        // UI Interactions
+        notifBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifPanel.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!notifPanel.contains(e.target) && !notifBtn.contains(e.target)) {
+                notifPanel.classList.remove('active');
+            }
+        });
+
+        postInput.addEventListener('input', () => {
+            postSubmit.disabled = postInput.value.trim().length === 0;
+        });
+
+        // Utilities
+        function getAvatarUrl(name, bg = '4f46e5', color = 'fff') {
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'U')}&background=${bg}&color=${color}&rounded=true`;
+        }
+
+        function timeAgo(date) {
+            if (!date) return 'Just now';
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + "y ago";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + "m ago";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + "d ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + "h ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " min ago";
+            return "Just now";
+        }
+
+        // Firebase Auth State Observer
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    // Fetch real student data
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (userDoc.exists()) {
+                        currentUserData = userDoc.data();
+
+                        // Security Rule enforcement check point:
+                        // Only valid roles (e.g. 'student') should see this dashboard
+                        if (currentUserData.role !== 'student' && currentUserData.role !== 'admin') {
+                            alert("Unauthorized access. Redirecting...");
+                            window.location.href = '../index.html';
+                            return;
+                        }
+
+                        updateProfileUI(user, currentUserData);
+                        loadLiveFeed();
+                        loadAcademicGlance(user.uid);
+                        loadContacts(currentUserData.department);
+
+                        // Hide loader once auth and primary data confirmed
+                        loader.style.opacity = '0';
+                        setTimeout(() => loader.style.display = 'none', 500);
+
+                    } else {
+                        // User exists in auth but missing Firestore profile
+                        alert("Profile setup incomplete. Redirecting to onboarding...");
+                        // window.location.href = '../auth/onboarding.html';
+                        handleEmptyProfileFallback(user);
+                    }
+                } catch (error) {
+                    console.error("Error fetching user data:", error);
+                    alert("System Error: Could not load user profile.");
+                }
+            } else {
+                // Not authenticated
+                window.location.href = '../auth/login.html';
+            }
+        });
+
+        // Fallback for demo when DB is empty but auth exists
+        function handleEmptyProfileFallback(user) {
+            currentUserData = {
+                name: user.displayName || 'Student',
+                rollNumber: 'Pending',
+                program: 'Not configured',
+                status: 'Incomplete'
+            };
+            updateProfileUI(user, currentUserData);
+            loadLiveFeed(); // Load public feed anyway
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+        }
+
+        // 1. Update all Profile Elements
+        function updateProfileUI(user, data) {
+            const avatar = getAvatarUrl(data.name);
+
+            // Header
+            document.getElementById('header-profile-btn').innerHTML = `<img src="${avatar}" alt="Profile">`;
+
+            // Left Nav
+            document.getElementById('nav-profile-pic').innerHTML = `<img src="${avatar}" alt="Profile">`;
+            document.getElementById('nav-student-name').textContent = data.name || 'Unknown User';
+            document.getElementById('nav-student-id').textContent = data.rollNumber || user.email || 'No ID';
+
+            // Post Creator
+            document.getElementById('create-post-pic').innerHTML = `<img src="${avatar}" alt="Profile">`;
+
+            // ID Widget
+            document.getElementById('widget-roll-no').textContent = data.rollNumber || 'PENDING';
+            document.getElementById('widget-program').textContent = data.program || 'No Program Assigned';
+
+            const statusEl = document.getElementById('widget-status');
+            statusEl.textContent = data.verificationStatus === 'verified' ? 'Verified Student' : 'Verification Pending';
+            statusEl.style.color = data.verificationStatus === 'verified' ? '#10b981' : '#f59e0b';
+        }
+
+        // 2. Load Live Feed (Real-time)
+        function loadLiveFeed() {
+            const feedRef = collection(db, 'feed');
+            const q = query(feedRef, orderBy('createdAt', 'desc'), limit(15));
+
+            feedUnsubscribe = onSnapshot(q, (snapshot) => {
+                feedContainer.innerHTML = '';
+
+                if (snapshot.empty) {
+                    feedContainer.innerHTML = `
+                        <div class="empty-state">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+                            <h3>No Recent Announcements</h3>
+                            <p>The global feed is currently quiet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const post = docSnap.data();
+                    const postDate = post.createdAt ? post.createdAt.toDate() : new Date();
+                    const isOfficial = post.priority === 'high' || post.role === 'admin' || post.role === 'principal';
+                    const verifiedBadge = isOfficial ? `<span class="verified-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>` : '';
+
+                    const avatar = getAvatarUrl(post.authorName, isOfficial ? '0ea5e9' : '64748b');
+
+                    const postHTML = `
+                        <div class="post-card" ${isOfficial ? 'style="border-left: 4px solid var(--info);"' : ''}>
+                            <div class="post-header">
+                                <div class="post-user">
+                                    <div class="profile-pic" style="border-color: ${isOfficial ? 'var(--info)' : 'white'}">
+                                        <img src="${post.authorPhoto || avatar}" alt="${post.authorName}">
+                                    </div>
+                                    <div class="post-user-info">
+                                        <h4>${post.authorName} ${verifiedBadge}</h4>
+                                        <span>${post.designation || 'Student'} • ${timeAgo(postDate)}</span>
+                                    </div>
+                                </div>
+                                ${post.isSponsored ? '<span style="font-size:10px; font-weight:700; background:rgba(245, 158, 11, 0.1); color:var(--warning); padding:4px 8px; border-radius:10px; border:1px solid rgba(245,158,11,0.2);">SPONSORED</span>' : ''}
+                            </div>
+                            <div class="post-content">${post.content}</div>
+                            
+                            ${post.mediaUrl ? `
+                            <div style="border-radius:12px; overflow:hidden; margin-bottom:16px; border:1px solid rgba(0,0,0,0.05);">
+                                <img src="${post.mediaUrl}" style="width:100%; height:auto; display:block;">
+                            </div>` : ''}
+
+                            <div class="post-stats">
+                                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-secondary)" stroke="none" style="vertical-align:middle;margin-right:4px;"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg> ${post.likes || 0} Likes</span>
+                                <span>${post.commentsCount || 0} Comments</span>
+                            </div>
+                            <div class="post-buttons">
+                                <div class="post-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg> Like</div>
+                                <div class="post-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Comment</div>
+                                <div class="post-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg> Share</div>
+                            </div>
+                        </div>
+                    `;
+                    feedContainer.insertAdjacentHTML('beforeend', postHTML);
+                });
+            }, (error) => {
+                console.error("Feed error:", error);
+                feedContainer.innerHTML = `<div class="empty-state"><p style="color:var(--danger)">Error loading feed.</p></div>`;
+            });
+        }
+
+        // 3. Post Creation (Sends to Pending state for moderation)
+        postSubmit.addEventListener('click', async () => {
+            const content = postInput.value.trim();
+            if (!content || !auth.currentUser) return;
+
+            postSubmit.disabled = true;
+            postSubmit.textContent = 'Submitting...';
+
+            try {
+                // We add to a 'posts' collection but set status to pending.
+                // Proctors will see it and approve it to 'feed'.
+                await addDoc(collection(db, 'pending_posts'), {
+                    content: content,
+                    authorId: auth.currentUser.uid,
+                    authorName: currentUserData.name,
+                    authorPhoto: null, // Let UI handle avatar generation if null
+                    createdAt: serverTimestamp(),
+                    status: 'pending'
+                });
+
+                postInput.value = '';
+                alert("Post submitted for review successfully. It will appear on the feed once approved by a Proctor.");
+            } catch (error) {
+                console.error("Error submitting post:", error);
+                alert("Failed to submit post.");
+            } finally {
+                postSubmit.textContent = 'Submit';
+                postSubmit.disabled = false;
+            }
+        });
+
+        // 4. Academic Glance loader
+        async function loadAcademicGlance(uid) {
+            try {
+                // In reality, this would query a 'student_records' subcollection or doc
+                const academicRef = doc(db, 'academic_records', uid);
+                const acaDoc = await getDoc(academicRef);
+
+                if (acaDoc.exists()) {
+                    const data = acaDoc.data();
+                    document.getElementById('glance-attendance').textContent = `${data.attendancePercentage || 0}%`;
+                    document.getElementById('glance-cgpa').textContent = data.cgpa ? parseFloat(data.cgpa).toFixed(2) : '--';
+                } else {
+                    document.getElementById('glance-attendance').textContent = 'N/A';
+                    document.getElementById('glance-cgpa').textContent = 'N/A';
+                }
+            } catch (e) {
+                console.error("Failed to load academic data");
+            }
+        }
+
+        // 5. Contacts / Faculty Directory preview
+        async function loadContacts(department) {
+            const contactWidget = document.getElementById('contacts-widget');
+
+            try {
+                // Fetch faculty for this department
+                const facultyQuery = query(collection(db, 'users'),
+                    // where('role', '==', 'teacher'),
+                    // where('department', '==', department),
+                    limit(4)
+                );
+
+                // For demo without composite index, just fetching limited users
+                const unsubscribe = onSnapshot(facultyQuery, (snapshot) => {
+                    // Keep title
+                    const titleHtml = `<h4 class="widget-title">Directory <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></h4>`;
+
+                    if (snapshot.empty) {
+                        contactWidget.innerHTML = titleHtml + `<div style="font-size:12px;color:var(--text-secondary);text-align:center;padding:10px;">No faculty configured.</div>`;
+                        return;
+                    }
+
+                    let contactsHtml = titleHtml;
+                    snapshot.forEach(docSnap => {
+                        const user = docSnap.data();
+                        // skip self
+                        if (docSnap.id === auth.currentUser.uid) return;
+
+                        const isOnline = Math.random() > 0.5; // Simulate online status if field not present
+
+                        contactsHtml += `
+                            <div class="contact-item">
+                                <div style="position:relative;">
+                                    <div class="profile-pic" style="width:32px; height:32px;">
+                                        <img src="${getAvatarUrl(user.name, 'ec4899')}" alt="${user.name}">
+                                    </div>
+                                    ${isOnline ? '<div class="online-dot"></div>' : ''}
+                                </div>
+                                <div>
+                                    <span style="font-size:14px; font-weight:600; display:block;">${user.name}</span>
+                                    <span style="font-size:11px; color:var(--text-secondary);">${user.designation || user.role}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    contactWidget.innerHTML = contactsHtml;
+                });
+            } catch (e) {
+                console.error("Contacts error");
+            }
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Examinations - GCP Desk</title>
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #0f172a; --accent: #4f46e5; --accent-hover: #4338ca; 
+            --bg-color: #f1f5f9; --island-bg: rgba(255, 255, 255, 0.85); --island-border: rgba(255, 255, 255, 0.9); 
+            --text-main: #0f172a; --text-secondary: #64748b; 
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #0ea5e9;
+            --radius-md: 20px; --radius-lg: 24px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #e2e8f0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; color: var(--text-main); }
+        
+        /* Exact 80 Background Layer Constraint */
+        .global-spread-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            opacity: 0.80; z-index: -80; pointer-events: none;
+        }
+        
+        /* Layout Framework */
+        .top-island { margin: 16px 24px; background: var(--island-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--island-border); border-radius: 100px; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); z-index: 1000; }
+        .top-left { display: flex; align-items: center; gap: 16px; }
+        .logo-box { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        .search-bar { background: rgba(0,0,0,0.04); border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 10px; width: 250px; border: 1px solid transparent; transition: 0.3s; }
+        .search-bar:focus-within { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .search-bar input { border: none; background: transparent; outline: none; font-family: 'Inter'; font-size: 14px; width: 100%; color: var(--text-main); }
+        
+        .top-center { display: flex; gap: 10px; }
+        .nav-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .nav-icon.active { background: rgba(79, 70, 229, 0.1); color: var(--accent); }
+        .nav-icon:hover:not(.active) { background: rgba(0,0,0,0.05); }
+        
+        .top-right { display: flex; align-items: center; gap: 12px; }
+        .profile-pic { width: 40px; height: 40px; border-radius: 50%; background: #ccc; overflow: hidden; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+
+        .main-container { flex: 1; display: grid; grid-template-columns: 280px 1fr 340px; gap: 24px; padding: 0 24px 24px 24px; overflow: hidden; }
+        
+        /* Left Sidebar Nav */
+        .left-sidebar { overflow-y: auto; padding-right: 10px; scrollbar-width: none; }
+        .left-sidebar::-webkit-scrollbar { display: none; }
+        .menu-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 16px; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; margin-bottom: 4px; }
+        .menu-item:hover { background: rgba(255,255,255,0.6); }
+        .menu-item.active { background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: var(--accent); }
+        .menu-icon { width: 36px; height: 36px; border-radius: 12px; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); color: inherit; flex-shrink: 0; }
+        
+        /* Center Area */
+        .center-feed { overflow-y: auto; padding-bottom: 100px; scrollbar-width: none; }
+        .center-feed::-webkit-scrollbar { display: none; }
+        
+        .page-header { background: var(--island-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 30px; margin-bottom: 24px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .page-header h2 { margin: 0; font-family: 'Outfit'; font-size: 28px; font-weight: 800; color: var(--primary); }
+        .page-header p { margin: 8px 0 0 0; color: var(--text-secondary); }
+
+        /* Content Card */
+        .content-card { background: white; border-radius: var(--radius-lg); padding: 32px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.02); margin-bottom: 24px; }
+        .section-title { font-family: 'Outfit'; font-size: 18px; font-weight: 700; margin: 0 0 20px 0; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
+
+        .exam-banner { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%); color: white; border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .exam-banner h3 { margin: 0 0 8px 0; font-family: 'Outfit'; font-size: 20px; }
+        .exam-banner p { margin: 0; font-size: 13px; opacity: 0.9; }
+        .countdown { display: flex; gap: 12px; }
+        .cd-box { background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center; min-width: 60px; }
+        .cd-box strong { display: block; font-size: 24px; font-family: 'Outfit'; font-weight: 800; }
+        .cd-box span { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .schedule-table { width: 100%; border-collapse: collapse; }
+        .schedule-table th { text-align: left; padding: 16px; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; border-bottom: 2px solid rgba(0,0,0,0.05); }
+        .schedule-table td { padding: 16px; border-bottom: 1px solid rgba(0,0,0,0.03); font-size: 14px; font-weight: 500; }
+        .schedule-table tr:last-child td { border-bottom: none; }
+        
+        .date-badge { background: rgba(0,0,0,0.04); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; }
+        .room-badge { border: 1px solid rgba(0,0,0,0.1); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+
+        /* Right Sidebar Widgets */
+        .right-sidebar { overflow-y: auto; padding-left: 10px; scrollbar-width: none; }
+        .right-sidebar::-webkit-scrollbar { display: none; }
+        
+        .widget-island { background: var(--island-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .widget-title { font-family: 'Outfit'; font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 16px 0; }
+
+        .notice-box { background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.1); padding: 16px; border-radius: 12px; margin-bottom: 12px; }
+        .notice-box h5 { margin: 0 0 4px 0; color: var(--warning); font-size: 13px; }
+        .notice-box p { margin: 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+
+        .mobile-dock { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.95); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.8); padding: 12px 24px; z-index: 1000; justify-content: space-between; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .dock-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); text-decoration: none; font-size: 10px; font-weight: 700; text-transform: uppercase; transition: all 0.3s; }
+        .dock-item.active { color: var(--accent); transform: translateY(-4px); }
+
+        .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr 300px; }
+            .left-sidebar { display: none; }
+        }
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 0 16px 80px 16px; gap: 16px; }
+            .right-sidebar { display: none; }
+            .top-island { margin: 16px; padding: 10px 16px; border-radius: 20px; }
+            .search-bar, .top-center { display: none; }
+            .mobile-dock { display: flex; }
+            .exam-banner { flex-direction: column; text-align: center; gap: 16px; }
+            .schedule-table th:nth-child(4), .schedule-table td:nth-child(4) { display: none; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="global-spread-bg"></div>
+
+    <!-- 🏝️ Top Island Navbar -->
+    <header class="top-island">
+        <div class="top-left">
+            <div class="logo-box"><img src="../assets/images/logo.png" alt="G" onerror="this.outerHTML='<span style=\'color:var(--accent);font-weight:800;font-size:24px;\'>G</span>'"></div>
+            <div class="search-bar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Search exams...">
+            </div>
+        </div>
+        <div class="top-center">
+            <a href="dashboard.html" class="nav-icon" title="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></a>
+            <a href="store.html" class="nav-icon" title="Campus Store"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></a>
+            <a href="class.html" class="nav-icon" title="My Class"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></a>
+        </div>
+        <div class="top-right">
+            <div class="profile-pic" id="header-profile-btn" onclick="window.location.href='settings.html'">
+                <div class="skeleton" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <!-- Left Navigation -->
+        <nav class="left-sidebar">
+            <a href="profile.html" class="menu-item" style="margin-bottom:16px;">
+                <div class="profile-pic" style="width:40px; height:40px;" id="nav-profile-pic">
+                    <div class="skeleton" style="width:100%; height:100%;"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 700;" id="nav-student-name">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;" id="nav-student-id">...</div>
+                </div>
+            </a>
+            
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">Main Menu</div>
+            
+            <a href="dashboard.html" class="menu-item">
+                <div class="menu-icon" style="color:var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                Dashboard & Feed
+            </a>
+            <a href="class.html" class="menu-item">
+                <div class="menu-icon" style="color:#ec4899;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                My Class
+            </a>
+            <a href="academic.html" class="menu-item active">
+                <div class="menu-icon" style="color:#0ea5e9;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></div>
+                Academic & Grades
+            </a>
+            <a href="attendance.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                Attendance
+            </a>
+            <a href="assignments.html" class="menu-item">
+                <div class="menu-icon" style="color:#f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                Assignments
+            </a>
+            
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">Campus</div>
+            <a href="fees.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                Fees & Dues
+            </a>
+            <!-- Added quick padding -->
+            <div style="height: 40px;"></div>
+        </nav>
+
+        <!-- Center Main Content -->
+        <main class="center-feed">
+            <div class="page-header">
+                <div>
+                    <h2>Examinations</h2>
+                    <p>Date sheets, seating plans, and instructions.</p>
+                </div>
+                <div style="font-size:32px;">📝</div>
+            </div>
+            
+            <div class="exam-banner">
+                <div>
+                    <h3>Midterm Examinations Fall 2024</h3>
+                    <p>Exams will commence strictly as per schedule. Bring your admit card.</p>
+                </div>
+                <div class="countdown">
+                    <div class="cd-box">
+                        <strong>14</strong>
+                        <span>Days</span>
+                    </div>
+                    <div class="cd-box">
+                        <strong>08</strong>
+                        <span>Hrs</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <h3 class="section-title">Date Sheet & Rooms <button style="background:none; border:none; color:var(--accent); font-weight:600; font-size:13px; cursor:pointer;">Download PDF</button></h3>
+                <div style="overflow-x:auto;">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Subject Code</th>
+                                <th>Subject Name</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <span class="date-badge">Nov 15</span><br>
+                                    <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:inline-block;">09:00 AM - 12:00 PM</span>
+                                </td>
+                                <td>CS-301</td>
+                                <td style="font-weight:600; color:var(--text-main);">Data Structures & Algorithms</td>
+                                <td><span class="room-badge">Hall A</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="date-badge">Nov 17</span><br>
+                                    <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:inline-block;">02:00 PM - 05:00 PM</span>
+                                </td>
+                                <td>SE-302</td>
+                                <td style="font-weight:600; color:var(--text-main);">Software Engineering</td>
+                                <td><span class="room-badge">Room 204</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span class="date-badge">Nov 20</span><br>
+                                    <span style="font-size:11px; color:var(--text-secondary); margin-top:4px; display:inline-block;">09:00 AM - 12:00 PM</span>
+                                </td>
+                                <td>CS-305</td>
+                                <td style="font-weight:600; color:var(--text-main);">Database Systems</td>
+                                <td><span class="room-badge">Hall B</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </main>
+
+        <!-- Right Sidebar Widgets -->
+        <aside class="right-sidebar">
+            
+            <div class="widget-island">
+                <h4 class="widget-title">Important Instructions</h4>
+                
+                <div class="notice-box">
+                    <h5>Admit Cards Mandatory</h5>
+                    <p>No student will be allowed to enter the examination hall without a physical admit card and Student ID.</p>
+                </div>
+                
+                <div class="notice-box" style="background:rgba(239, 68, 68, 0.05); border-color:rgba(239, 68, 68, 0.1);">
+                    <h5 style="color:var(--danger);">Zero Tolerance</h5>
+                    <p>Any electronic devices including smartwatches and phones found during the exam will lead to immediate cancellation of the paper.</p>
+                </div>
+            </div>
+            
+        </aside>
+    </div>
+
+    <!-- Mobile Navigation Dock -->
+    <nav class="mobile-dock">
+        <a href="dashboard.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Feed
+        </a>
+        <a href="academic.html" class="dock-item active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            Academics
+        </a>
+        <a href="exams.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Exams
+        </a>
+        <a href="profile.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Profile
+        </a>
+    </nav>
+
+    <!-- Firebase Integration script -->
+    <script type="module">
+        import { auth, db } from '../firebase/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        
+                        // Update UI Basic Info
+                        const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=4f46e5&color=fff&rounded=true`;
+                        document.getElementById('header-profile-btn').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-profile-pic').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-student-name').textContent = userData.name;
+                        document.getElementById('nav-student-id').textContent = userData.rollNumber || 'No ID';
+                    }
+                } catch(e) {
+                    console.error("Error", e);
+                }
+            } else {
+                window.location.href = '../auth/login.html';
+            }
+        });
+    </script>
+</body>
+</html>

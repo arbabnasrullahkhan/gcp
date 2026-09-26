@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Complaints & Helpdesk - GCP Desk</title>
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #0f172a; --accent: #4f46e5; --accent-hover: #4338ca; 
+            --bg-color: #f1f5f9; --island-bg: rgba(255, 255, 255, 0.85); --island-border: rgba(255, 255, 255, 0.9); 
+            --text-main: #0f172a; --text-secondary: #64748b; 
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #0ea5e9;
+            --radius-md: 20px; --radius-lg: 24px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #e2e8f0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; color: var(--text-main); }
+        
+        /* Exact 80 Background Layer Constraint */
+        .global-spread-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            opacity: 0.80; z-index: -80; pointer-events: none;
+        }
+        
+        /* Layout Framework */
+        .top-island { margin: 16px 24px; background: var(--island-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--island-border); border-radius: 100px; padding: 10px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); z-index: 1000; }
+        .top-left { display: flex; align-items: center; gap: 16px; }
+        .logo-box { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        .search-bar { background: rgba(0,0,0,0.04); border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; gap: 10px; width: 250px; border: 1px solid transparent; transition: 0.3s; }
+        .search-bar:focus-within { background: white; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .search-bar input { border: none; background: transparent; outline: none; font-family: 'Inter'; font-size: 14px; width: 100%; color: var(--text-main); }
+        
+        .top-center { display: flex; gap: 10px; }
+        .nav-icon { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .nav-icon.active { background: rgba(79, 70, 229, 0.1); color: var(--accent); }
+        .nav-icon:hover:not(.active) { background: rgba(0,0,0,0.05); }
+        
+        .top-right { display: flex; align-items: center; gap: 12px; }
+        .profile-pic { width: 40px; height: 40px; border-radius: 50%; background: #ccc; overflow: hidden; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .profile-pic img { width: 100%; height: 100%; object-fit: cover; }
+
+        .main-container { flex: 1; display: grid; grid-template-columns: 280px 1fr 340px; gap: 24px; padding: 0 24px 24px 24px; overflow: hidden; }
+        
+        /* Left Sidebar Nav */
+        .left-sidebar { overflow-y: auto; padding-right: 10px; scrollbar-width: none; }
+        .left-sidebar::-webkit-scrollbar { display: none; }
+        .menu-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 16px; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; transition: 0.2s; margin-bottom: 4px; }
+        .menu-item:hover { background: rgba(255,255,255,0.6); }
+        .menu-item.active { background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: var(--accent); }
+        .menu-icon { width: 36px; height: 36px; border-radius: 12px; background: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); color: inherit; flex-shrink: 0; }
+        
+        /* Center Area */
+        .center-feed { overflow-y: auto; padding-bottom: 100px; scrollbar-width: none; }
+        .center-feed::-webkit-scrollbar { display: none; }
+        .page-header { background: var(--island-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 30px; margin-bottom: 24px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .page-header h2 { margin: 0; font-family: 'Outfit'; font-size: 28px; font-weight: 800; color: var(--primary); }
+        .page-header p { margin: 8px 0 0 0; color: var(--text-secondary); }
+
+        /* Form & List UI */
+        .content-card { background: white; border-radius: var(--radius-lg); padding: 32px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.02); margin-bottom: 24px; }
+        .section-title { font-family: 'Outfit'; font-size: 18px; font-weight: 700; margin: 0 0 20px 0; color: var(--text-main); }
+        
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.02); font-family: 'Inter'; font-size: 14px; outline: none; transition: 0.2s; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .input-group textarea { resize: vertical; min-height: 100px; }
+
+        .btn-submit { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-family: 'Inter'; cursor: pointer; transition: 0.2s; width: 100%; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2); }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 25px rgba(79, 70, 229, 0.3); }
+
+        .complaints-list { display: flex; flex-direction: column; gap: 16px; }
+        .complaint-item { padding: 20px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.01); display: flex; justify-content: space-between; align-items: flex-start; }
+        .comp-info h4 { margin: 0 0 4px 0; font-family: 'Outfit'; font-size: 16px; }
+        .comp-info p { margin: 0 0 8px 0; font-size: 13px; color: var(--text-secondary); }
+        .comp-meta { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+        
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .badge-resolved { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+        /* Right Sidebar Widgets */
+        .right-sidebar { overflow-y: auto; padding-left: 10px; scrollbar-width: none; }
+        .right-sidebar::-webkit-scrollbar { display: none; }
+        
+        .widget-island { background: var(--island-bg); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
+        .widget-title { font-family: 'Outfit'; font-size: 16px; font-weight: 700; color: var(--text-main); margin: 0 0 16px 0; display: flex; justify-content: space-between; align-items: center; }
+
+        .contact-box { background: rgba(79, 70, 229, 0.05); padding: 16px; border-radius: 16px; border: 1px solid rgba(79, 70, 229, 0.1); margin-bottom: 12px; }
+        .contact-box h5 { margin: 0 0 4px 0; color: var(--accent); font-size: 14px; }
+        .contact-box p { margin: 0; font-size: 12px; color: var(--text-secondary); }
+
+        .mobile-dock { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.95); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.8); padding: 12px 24px; z-index: 1000; justify-content: space-between; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .dock-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); text-decoration: none; font-size: 10px; font-weight: 700; text-transform: uppercase; transition: all 0.3s; }
+        .dock-item.active { color: var(--accent); transform: translateY(-4px); }
+
+        .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 8px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        @media (max-width: 1024px) {
+            .main-container { grid-template-columns: 1fr 300px; }
+            .left-sidebar { display: none; }
+        }
+        @media (max-width: 768px) {
+            .main-container { grid-template-columns: 1fr; padding: 0 16px 80px 16px; gap: 16px; }
+            .right-sidebar { display: none; }
+            .top-island { margin: 16px; padding: 10px 16px; border-radius: 20px; }
+            .search-bar, .top-center { display: none; }
+            .mobile-dock { display: flex; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="global-spread-bg"></div>
+
+    <!-- 🏝️ Top Island Navbar -->
+    <header class="top-island">
+        <div class="top-left">
+            <div class="logo-box"><img src="../assets/images/logo.png" alt="G" onerror="this.outerHTML='<span style=\'color:var(--accent);font-weight:800;font-size:24px;\'>G</span>'"></div>
+            <div class="search-bar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Search...">
+            </div>
+        </div>
+        <div class="top-center">
+            <a href="dashboard.html" class="nav-icon" title="Dashboard"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></a>
+            <a href="store.html" class="nav-icon" title="Campus Store"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></a>
+            <a href="class.html" class="nav-icon" title="My Class"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></a>
+        </div>
+        <div class="top-right">
+            <div class="profile-pic" id="header-profile-btn" onclick="window.location.href='settings.html'">
+                <div class="skeleton" style="width:100%; height:100%;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <!-- Left Navigation -->
+        <nav class="left-sidebar">
+            <a href="profile.html" class="menu-item" style="margin-bottom:16px;">
+                <div class="profile-pic" style="width:40px; height:40px;" id="nav-profile-pic">
+                    <div class="skeleton" style="width:100%; height:100%;"></div>
+                </div>
+                <div>
+                    <div style="font-weight: 700;" id="nav-student-name">Loading...</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;" id="nav-student-id">...</div>
+                </div>
+            </a>
+            
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">Main Menu</div>
+            
+            <a href="dashboard.html" class="menu-item">
+                <div class="menu-icon" style="color:var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+                Dashboard & Feed
+            </a>
+            <a href="class.html" class="menu-item">
+                <div class="menu-icon" style="color:#ec4899;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+                My Class
+            </a>
+            <a href="academic.html" class="menu-item">
+                <div class="menu-icon" style="color:#0ea5e9;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg></div>
+                Academic & Grades
+            </a>
+            <a href="attendance.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                Attendance
+            </a>
+            <a href="assignments.html" class="menu-item">
+                <div class="menu-icon" style="color:#f59e0b;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                Assignments
+            </a>
+            <a href="documents.html" class="menu-item">
+                <div class="menu-icon" style="color:#8b5cf6;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></div>
+                Documents & Vault
+            </a>
+            
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin: 16px 0 8px 16px; letter-spacing: 0.5px;">Campus</div>
+            <a href="fees.html" class="menu-item">
+                <div class="menu-icon" style="color:#10b981;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                Fees & Dues
+            </a>
+            <a href="services.html" class="menu-item">
+                <div class="menu-icon" style="color:#0ea5e9;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
+                Campus Services
+            </a>
+            <a href="complaints.html" class="menu-item active">
+                <div class="menu-icon" style="color:#ef4444;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></div>
+                Complaints
+            </a>
+            <!-- Added quick padding -->
+            <div style="height: 40px;"></div>
+        </nav>
+
+        <!-- Center Main Content -->
+        <main class="center-feed">
+            <div class="page-header">
+                <div>
+                    <h2>Grievance Cell</h2>
+                    <p>Lodge complaints or report issues to the administration.</p>
+                </div>
+                <div style="font-size:32px;">📢</div>
+            </div>
+            
+            <div class="content-card">
+                <h3 class="section-title">Submit a New Complaint</h3>
+                <form id="complaint-form">
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select id="comp-category" required>
+                            <option value="">Select Category</option>
+                            <option value="Academic">Academic Issue</option>
+                            <option value="Hostel">Hostel/Mess</option>
+                            <option value="Infrastructure">Infrastructure/Maintenance</option>
+                            <option value="Disciplinary">Disciplinary/Anti-Ragging</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Subject</label>
+                        <input type="text" id="comp-subject" placeholder="Brief title of your issue" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Description</label>
+                        <textarea id="comp-desc" placeholder="Explain the issue in detail..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Submit Grievance</button>
+                </form>
+            </div>
+
+            <div class="content-card">
+                <h3 class="section-title">Your Previous Complaints</h3>
+                <div class="complaints-list" id="complaints-list">
+                    <!-- Skeletons -->
+                    <div class="complaint-item">
+                        <div style="flex:1;">
+                            <div class="skeleton" style="width:150px;height:16px;margin-bottom:8px;"></div>
+                            <div class="skeleton" style="width:80%;height:12px;margin-bottom:8px;"></div>
+                            <div class="skeleton" style="width:100px;height:10px;"></div>
+                        </div>
+                        <div class="skeleton" style="width:60px;height:20px;border-radius:8px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </main>
+
+        <!-- Right Sidebar Widgets -->
+        <aside class="right-sidebar">
+            
+            <div class="widget-island">
+                <h4 class="widget-title">Emergency Contacts</h4>
+                
+                <div class="contact-box">
+                    <h5>Anti-Ragging Helpline</h5>
+                    <p>1800-180-5522</p>
+                </div>
+                <div class="contact-box">
+                    <h5>Campus Security</h5>
+                    <p>+91 98765 43210</p>
+                </div>
+                <div class="contact-box" style="background:rgba(239, 68, 68, 0.05); border-color:rgba(239, 68, 68, 0.1);">
+                    <h5 style="color:var(--danger);">Medical Emergency</h5>
+                    <p>108 (Campus Ambulance)</p>
+                </div>
+            </div>
+            
+        </aside>
+    </div>
+
+    <!-- Mobile Navigation Dock -->
+    <nav class="mobile-dock">
+        <a href="dashboard.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Feed
+        </a>
+        <a href="complaints.html" class="dock-item active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Issues
+        </a>
+        <a href="academic.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            Academics
+        </a>
+        <a href="profile.html" class="dock-item">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Profile
+        </a>
+    </nav>
+
+    <!-- Firebase Integration script -->
+    <script type="module">
+        import { auth, db } from '../firebase/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { collection, query, orderBy, getDocs, doc, getDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        
+                        // Update UI Basic Info
+                        const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=4f46e5&color=fff&rounded=true`;
+                        document.getElementById('header-profile-btn').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-profile-pic').innerHTML = `<img src="${avatar}" alt="Profile">`;
+                        document.getElementById('nav-student-name').textContent = userData.name;
+                        document.getElementById('nav-student-id').textContent = userData.rollNumber || 'No ID';
+
+                        fetchComplaints(user.uid);
+                    }
+                } catch(e) {
+                    console.error("Error", e);
+                }
+            } else {
+                window.location.href = '../auth/login.html';
+            }
+        });
+
+        document.getElementById('complaint-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = 'Submitting...';
+            btn.disabled = true;
+
+            const category = document.getElementById('comp-category').value;
+            const subject = document.getElementById('comp-subject').value;
+            const desc = document.getElementById('comp-desc').value;
+
+            try {
+                await addDoc(collection(db, 'users', auth.currentUser.uid, 'complaints'), {
+                    category,
+                    subject,
+                    description: desc,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+
+                e.target.reset();
+                fetchComplaints(auth.currentUser.uid);
+                alert("Grievance submitted successfully. The administration will review it shortly.");
+            } catch (error) {
+                console.error("Error submitting complaint:", error);
+                alert("Failed to submit. Please try again.");
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        async function fetchComplaints(uid) {
+            try {
+                const q = query(collection(db, 'users', uid, 'complaints'), orderBy('createdAt', 'desc'));
+                const snaps = await getDocs(q);
+                
+                const listContainer = document.getElementById('complaints-list');
+                listContainer.innerHTML = '';
+
+                if(snaps.empty) {
+                    listContainer.innerHTML = `<div style="text-align:center; padding: 20px; color:var(--text-secondary);">No past grievances found.</div>`;
+                } else {
+                    snaps.forEach(docSnap => {
+                        const data = docSnap.data();
+                        let dateStr = 'Just now';
+                        if(data.createdAt) {
+                            const d = data.createdAt.toDate();
+                            dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }
+
+                        listContainer.insertAdjacentHTML('beforeend', `
+                            <div class="complaint-item">
+                                <div class="comp-info">
+                                    <h4>${data.subject}</h4>
+                                    <p>${data.description.length > 60 ? data.description.substring(0, 60) + '...' : data.description}</p>
+                                    <div class="comp-meta">${data.category} • Filed on ${dateStr}</div>
+                                </div>
+                                <span class="badge badge-${data.status}">${data.status}</span>
+                            </div>
+                        `);
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching complaints:", error);
+            }
+        }
+    </script>
+</body>
+</html>

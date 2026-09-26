@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secure Checkout - GCP Desk</title>
+    <link rel="icon" href="../assets/images/favicon.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --primary: #0f172a; --accent: #4f46e5; --accent-hover: #4338ca; 
+            --bg-color: #f1f5f9; --island-bg: rgba(255, 255, 255, 0.85); --island-border: rgba(255, 255, 255, 0.9); 
+            --text-main: #0f172a; --text-secondary: #64748b; 
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #0ea5e9;
+            --radius-md: 20px; --radius-lg: 24px;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #e2e8f0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; color: var(--text-main); }
+        
+        /* Exact 80 Background Layer Constraint */
+        .global-spread-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            opacity: 0.80; z-index: -80; pointer-events: none;
+        }
+        
+        /* Simple Top Header */
+        .header-nav { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+        .back-btn { display: flex; align-items: center; gap: 8px; color: var(--text-main); text-decoration: none; font-weight: 600; font-size: 15px; }
+        .back-btn:hover { color: var(--accent); }
+        .secure-badge { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 8px 16px; border-radius: 20px; }
+        
+        /* Checkout Layout */
+        .checkout-container { flex: 1; display: grid; grid-template-columns: 1fr 400px; max-width: 1100px; margin: 0 auto; width: 100%; gap: 40px; padding: 20px 40px; overflow-y: auto; scrollbar-width: none; }
+        .checkout-container::-webkit-scrollbar { display: none; }
+
+        /* Left Side: Form */
+        .payment-form { background: white; border-radius: var(--radius-lg); padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); }
+        .payment-form h2 { margin: 0 0 24px 0; font-family: 'Outfit'; font-size: 28px; color: var(--primary); }
+
+        .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+        .method-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 16px; cursor: pointer; transition: 0.2s; font-weight: 600; color: var(--text-main); background: white; }
+        .method-btn.active { border-color: var(--accent); background: rgba(79, 70, 229, 0.03); color: var(--accent); }
+        .method-btn img { height: 24px; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .input-field { width: 100%; padding: 14px 16px; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; font-family: 'Inter'; font-size: 15px; color: var(--text-main); outline: none; transition: 0.3s; background: #f8fafc; }
+        .input-field:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        /* Right Side: Summary */
+        .order-summary { background: var(--island-bg); backdrop-filter: blur(24px); border-radius: var(--radius-lg); padding: 32px; border: 1px solid var(--island-border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); align-self: start; }
+        .order-summary h3 { margin: 0 0 24px 0; font-family: 'Outfit'; font-size: 20px; }
+        
+        .summary-item { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 15px; color: var(--text-secondary); font-weight: 500; }
+        .summary-item.total { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 20px; font-weight: 700; color: var(--primary); font-family: 'Outfit'; }
+
+        .btn-pay { width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: 'Inter'; cursor: pointer; transition: 0.2s; margin-top: 32px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-pay:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2); }
+
+        @media (max-width: 900px) {
+            .checkout-container { grid-template-columns: 1fr; padding: 20px; }
+            .order-summary { order: -1; }
+        }
+        @media (max-width: 600px) {
+            .header-nav { padding: 16px 20px; }
+            .payment-form { padding: 24px; }
+            .payment-methods { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="global-spread-bg"></div>
+
+    <header class="header-nav">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back
+        </a>
+        <div class="secure-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            256-bit Secure Checkout
+        </div>
+    </header>
+
+    <div class="checkout-container">
+        
+        <div class="payment-form">
+            <h2>Payment Method</h2>
+            
+            <div class="payment-methods">
+                <div class="method-btn active">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    Card
+                </div>
+                <div class="method-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Net Banking
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Cardholder Name</label>
+                <input type="text" class="input-field" placeholder="John Doe" id="card-name">
+            </div>
+
+            <div class="input-group">
+                <label>Card Number</label>
+                <input type="text" class="input-field" placeholder="0000 0000 0000 0000" id="card-num" maxlength="19">
+            </div>
+
+            <div class="row">
+                <div class="input-group">
+                    <label>Expiry Date</label>
+                    <input type="text" class="input-field" placeholder="MM/YY" maxlength="5">
+                </div>
+                <div class="input-group">
+                    <label>CVV</label>
+                    <input type="password" class="input-field" placeholder="123" maxlength="3">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="order-summary">
+            <h3>Payment Summary</h3>
+            
+            <div class="summary-item">
+                <span>Fall Semester Fee (Installment 1)</span>
+                <span style="color:var(--text-main); font-weight:600;">$1,200.00</span>
+            </div>
+            <div class="summary-item">
+                <span>Processing Fee</span>
+                <span style="color:var(--text-main); font-weight:600;">$15.00</span>
+            </div>
+            
+            <div class="summary-item total">
+                <span>Total Due</span>
+                <span>$1,215.00</span>
+            </div>
+
+            <button class="btn-pay" onclick="processPayment()">
+                Pay $1,215.00
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+            <p style="text-align:center; font-size:12px; color:var(--text-secondary); margin-top:16px;">Payments are processed instantly and receipt will be emailed.</p>
+        </div>
+
+    </div>
+
+    <!-- Firebase Integration script -->
+    <script type="module">
+        import { auth, db } from '../firebase/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        
+        // Ensure user is logged in
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = '../auth/login.html';
+            }
+        });
+
+        // Simple formatting for card number
+        document.getElementById('card-num').addEventListener('input', function (e) {
+            let target = e.target;
+            let val = target.value.replace(/\D/g, '').match(/.{1,4}/g);
+            target.value = val ? val.join(' ') : '';
+        });
+
+        window.processPayment = function() {
+            const btn = document.querySelector('.btn-pay');
+            btn.innerHTML = `<span class="skeleton" style="width:20px; height:20px; display:inline-block; border-radius:50%; background:rgba(255,255,255,0.5);"></span> Processing...`;
+            btn.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                alert("Payment Processed Successfully!");
+                window.location.href = 'fees.html';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
